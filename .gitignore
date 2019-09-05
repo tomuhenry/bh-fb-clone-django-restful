@@ -106,3 +106,5 @@ venv.bak/
 # pycham workspace
 .idea/
 .idea/*.xml
+*.idea/*
+*.idea/*.*
