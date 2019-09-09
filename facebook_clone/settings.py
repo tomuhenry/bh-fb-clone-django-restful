@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 
     'api',
     'users',
+    'posts',
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
