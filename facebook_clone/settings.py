@@ -150,3 +150,4 @@ django_heroku.settings(locals())
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SITE_ID = 1
+
