@@ -1,7 +1,5 @@
-from rest_framework import generics
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from rest_framework import permissions
 from posts.permissions import IsOwnerOrReadOnly
 
 from .models import Post
@@ -14,11 +12,13 @@ class PostListView(generics.ListCreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
-    def create(self, request, *args):
-        serializer = PostSerializer(data=request.data)
+    def post(self, request, *args, **kwargs, ):
+        data = request.data
+        serializer = PostSerializer(data=data)
         if serializer.is_valid():
             serializer.save(author=request.user)
-        return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -26,9 +26,3 @@ class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
                           IsOwnerOrReadOnly]
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-
-    def get_object(self):
-        return get_object_or_404(
-            self.get_queryset(),
-            pk=self.kwargs.get('pk')
-        )
