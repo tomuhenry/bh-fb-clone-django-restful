@@ -6,43 +6,64 @@ from users.models import CustomUser
 class TestPosts(TestCase):
 
     def setUp(self):
-        self.client.force_login(CustomUser.objects.create(
-            username="tomu",
-            email="henry@tomu.com",
-            password="thisPass"
-        ))
+        self.client.force_login(CustomUser.objects.get_or_create(username='testuser')[0])
+        self.user = CustomUser.objects.get(username='testuser')
+        self.post = self.client.post(reverse('posts:list_post'), {
+            'post_body': 'This is the Post body', 'author': self.user.pk})
 
     def test_get_posts(self):
         """ Test get all posts """
         resp = self.client.get(reverse('posts:list_post'))
         self.assertEqual(resp.status_code, 200)
+        self.assertIn('results', resp.data)
 
     def test_create_post(self):
         """ Test for Post Creation """
-        resp = self.client.post(reverse('posts:list_post'), {'post_body': 'This is the Post body'})
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn('created_at', resp.data)
+        self.assertEqual(self.post.status_code, 201)
+        self.assertIn('created_at', self.post.data)
 
-    def test_view_single_post(self):
+    def test_create_post_no_data(self):
+        """ Test for Post Creation no data """
+        resp = self.client.post(reverse('posts:list_post'), {
+            'post_body': "", 'author': ""})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_view_a_post(self):
         """ Test view single post """
-        post = self.client.post(reverse('posts:list_post'), {'post_body': 'This is the Post body'})
-        resp = self.client.get(reverse('posts:post_detail', kwargs={'pk': post.data['pk']}))
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn('post_body', resp.data)
+        resp1 = self.client.get(reverse('posts:post_detail', kwargs={'pk': self.post.data['pk']}))
+        self.assertEqual(resp1.status_code, 200)
+        self.assertIn('post_body', resp1.data)
 
-    def test_delete_single_post(self):
-        """ Test delete own post """
-        post = self.client.post(reverse('posts:list_post'), {'post_body': 'This is the Post body'})
-        resp = self.client.delete(reverse('posts:post_detail', kwargs={'pk': post.data['pk']}))
-        self.assertEqual(resp.status_code, 204)
-        self.assertIsNone(resp.data)
+    def test_view_a_post_not_found(self):
+        """ Test view single post not found """
+        resp1 = self.client.get(reverse('posts:post_detail', kwargs={'pk': 100}))
+        self.assertEqual(resp1.status_code, 404)
 
-    def test_edit_single_post(self):
-        """ Test edit own post """
-        post = self.client.post(reverse('posts:list_post'), {'post_body': 'This is the Post body'})
-        resp = self.client.put(reverse('posts:post_detail', kwargs={'pk': post.data['pk']}),
-                               {'post_body': 'This Body'}, content_type='application/json')
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn('This Body', resp.data['post_body'])
+    def test_add_comment(self):
+        """ Test add Comments """
+        response = self.client.post(reverse('posts:list_comment', kwargs={'post_pk': self.post.data['pk']}),
+                                    {'comment_body': "This is the comment", 'author': self.user.pk})
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('comment_body', response.data)
 
+    def test_get_comments(self):
+        """ Test Get Comments """
+        response1 = self.client.get(reverse('posts:list_comment', kwargs={'post_pk': self.post.data['pk']}))
+        self.assertEqual(response1.status_code, 200)
 
+    def test_edit_post(self):
+        """ Test edit single post """
+        resp2 = self.client.put(reverse('posts:post_detail', kwargs={'pk': self.post.data['pk']}),
+                                {'post_body': 'This Body', 'author': self.user.pk},
+                                content_type='application/json')
+        self.assertEqual(resp2.status_code, 200)
+        self.assertIn('This Body', resp2.data['post_body'])
+
+    def test_delete_a_post(self):
+        """ Test delete single post """
+        resp3 = self.client.delete(reverse('posts:post_detail', kwargs={'pk': self.post.data['pk']}))
+        self.assertEqual(resp3.status_code, 204)
+        self.assertIsNone(resp3.data)
+
+    def tearDown(self):
+        self.client.logout()
