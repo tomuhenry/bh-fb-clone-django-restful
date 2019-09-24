@@ -8,4 +8,6 @@ This is a facebook clone application for posting and receiving likes, comments, 
 [Facebook Clone](https://www.pivotaltracker.com/n/projects/2396204)
 
 ### Heroku Link
-[Facebook Clone App](https://django-rest-facebook-clone.herokuapp.com/)
+[Facebook Clone App](https://django-rest-facebook-clone.herokuapp.com/api/v1/rest-auth/signup/)
+
+[Facebook Clone App Beta](http://django-facebook-clone.herokuapp.com/api/v1/rest-auth/signup/)

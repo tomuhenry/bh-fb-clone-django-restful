@@ -15,6 +15,7 @@ class CommentListView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
 
     def post(self, request, *args, **kwargs):
+        """ This method gets all comments for a post """
         serializer = CommentSerializer(data=request.data)
         post_pk = self.kwargs['post_pk']
         post = Post.objects.get(pk=post_pk)
@@ -31,4 +32,10 @@ class CommentListView(generics.ListCreateAPIView):
         serializer = self.serializer_class(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class CommentRetrieveDestroyView(generics.RetrieveDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly]
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
