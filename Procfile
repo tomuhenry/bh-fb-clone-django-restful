@@ -1,1 +1,1 @@
-web: gunicorn facebook_clone.wsgi
+web: gunicorn facebook_clone.wsgi --log-file -
