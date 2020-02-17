@@ -1,23 +1,23 @@
 language: python
 
 python:
-    - "3.7-dev"
+  - "3.8.0"
 
 services:
-    - postgresql
+  - postgresql
 
 install:
-    - pip install -r requirements.txt
-    - pip install codecov
+  - pip install -r requirements.txt
+  - pip install codecov
 
 before_script:
-    - psql -c "create database facebook_clone_db;" -U postgres
-    - python manage.py makemigrations
-    - python manage.py migrate
+  - psql -c "create database facebook_clone_db;" -U postgres
+  - python manage.py makemigrations
+  - python manage.py migrate
 
 script:
-    - coverage run --source='.' manage.py test
-    - bash <(curl -s https://codecov.io/bash)
+  - coverage run --source='.' manage.py test
+  - bash <(curl -s https://codecov.io/bash)
 
 after_success:
-    - codecov
+  - codecov
